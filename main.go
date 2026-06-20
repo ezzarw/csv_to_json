@@ -1,20 +1,12 @@
 package main
 
 import (
-	// "bufio"
-	// "errors"
-
 	"encoding/csv"
 	"encoding/json"
-	"io"
-
-	// "strings"
-
-	// "encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	// "strings"
 )
 
 func handle(err error) {
@@ -35,10 +27,6 @@ func main() {
 		flag.Usage() // print help
 		os.Exit(1)
 	}
-
-	// baca bytes dari file_input dan dijadikan agar read_csv bisa baca
-	// read_file_data, err := os.ReadFile(*file_input)
-	// handle(err)
 
 	read_file_data, err := os.Open(*file_input)
 	handle(err)
