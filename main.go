@@ -12,9 +12,16 @@ import (
 )
 
 func handle(err error) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if os.Getenv("APP") == "local" {
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else if os.Getenv("APP") == "production" {
+		if err != nil {
+			fmt.Println("error")
+			os.Exit(1)
+		}
 	}
 }
 
@@ -60,9 +67,9 @@ func main() {
 			for key_id := 0; key_id < len(header); key_id++ {
 				map_storage_sementara[header[key_id]] = row[key_id]
 				if id_per_object < 10 {
-					map_storage["0" + conv.IntToString(id_per_object)] = map_storage_sementara
-					} else {
-						map_storage[conv.IntToString(id_per_object)] = map_storage_sementara
+					map_storage["0"+conv.IntToString(id_per_object)] = map_storage_sementara
+				} else {
+					map_storage[conv.IntToString(id_per_object)] = map_storage_sementara
 				}
 			}
 			id_per_object++
@@ -72,15 +79,15 @@ func main() {
 		per_row_iteration++
 	}
 
-	
 	json_result_byte, err := json.MarshalIndent(map_storage, "", "  ")
 	handle(err)
-	
+
 	json_result := string(json_result_byte)
-	
+
 	if *file_output != "" {
 		os.Create(string(*file_output))
-		err := os.WriteFile(string(*file_output), json_result_byte, 0777)
+		err := os.WriteFile(string(*file_output), json_result_byte, 0760)
+		_ = os.Chmod(string(*file_output), 0760)
 		handle(err)
 	}
 
