@@ -7,18 +7,21 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/ogen-go/ogen/conv"
 )
 
 func handle(err error) {
 	if err != nil {
-		fmt.Println("error")
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
 func main() {
 	// baca flag dan input .csv
-	file_input := flag.String("file", "", "masukkan sebuah file berformat .csv")
+	file_input := flag.String("f", "", "input sebuah file berformat .csv, example:\"./csv_to_json -f ./file.csv\"")
+	file_output := flag.String("o", "", "membuat file baru sebagai output, yang berformat .json example:\"./csv_to_json -f ./file.csv -o output.json\"")
 	flag.Parse()
 
 	// eror kalo flag -file dikosongin
@@ -38,7 +41,7 @@ func main() {
 	id_per_object := 0
 
 	header := []string{}
-	map_storage := make(map[int]interface{})
+	map_storage := make(map[string]interface{})
 
 	for {
 		row, err := read_csv.Read()
@@ -56,7 +59,11 @@ func main() {
 			map_storage_sementara := make(map[string]interface{})
 			for key_id := 0; key_id < len(header); key_id++ {
 				map_storage_sementara[header[key_id]] = row[key_id]
-				map_storage[id_per_object] = map_storage_sementara
+				if id_per_object < 10 {
+					map_storage["0" + conv.IntToString(id_per_object)] = map_storage_sementara
+					} else {
+						map_storage[conv.IntToString(id_per_object)] = map_storage_sementara
+				}
 			}
 			id_per_object++
 		}
@@ -65,8 +72,17 @@ func main() {
 		per_row_iteration++
 	}
 
-	json_result, err := json.Marshal(map_storage)
+	
+	json_result_byte, err := json.MarshalIndent(map_storage, "", "  ")
 	handle(err)
+	
+	json_result := string(json_result_byte)
+	
+	if *file_output != "" {
+		os.Create(string(*file_output))
+		err := os.WriteFile(string(*file_output), json_result_byte, 0777)
+		handle(err)
+	}
 
-	fmt.Println(string(json_result))
+	fmt.Println(json_result)
 }
